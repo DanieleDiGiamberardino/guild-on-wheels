@@ -1,7 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://cvdmayb1i4wj0"]
+[gd_scene load_steps=7 format=3 uid="uid://cvdmayb1i4wj0"]
 
 [ext_resource type="PackedScene" uid="uid://os2nv3m7rgj6" path="res://Scenes/Caravan.tscn" id="1_5cjrv"]
 [ext_resource type="Script" uid="uid://wv7m0y56kfol" path="res://Scripts/World.gd" id="1_j0p05"]
+[ext_resource type="Script" uid="uid://cvt0i6b27ll73" path="res://Scripts/Shop.gd" id="3_5nsto"]
+[ext_resource type="Script" uid="uid://cwrum8gtm6tte" path="res://Scripts/Btn_OpenShop.gd" id="3_gjpho"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_j0p05"]
 
@@ -14,7 +16,7 @@ script = ExtResource("1_j0p05")
 [node name="Caravan" parent="." instance=ExtResource("1_5cjrv")]
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
-layer = 10
+layer = 100
 
 [node name="GoldLabel" type="Label" parent="CanvasLayer"]
 offset_right = 52.0
@@ -22,7 +24,7 @@ offset_bottom = 23.0
 text = "Oro : 0"
 label_settings = SubResource("LabelSettings_j0p05")
 
-[node name="UpgradeButton" type="Button" parent="CanvasLayer"]
+[node name="Btn_OpenShop" type="Button" parent="CanvasLayer"]
 anchors_preset = -1
 anchor_left = 0.14500001
 anchor_top = 0.031000001
@@ -32,7 +34,9 @@ offset_left = 0.19999695
 offset_top = -0.1600008
 offset_right = -0.08001709
 offset_bottom = -0.12000275
-text = "Potenzia Spada (50 Oro)"
+text = "Negozio
+"
+script = ExtResource("3_gjpho")
 
 [node name="HealthBar" type="ProgressBar" parent="CanvasLayer"]
 anchors_preset = -1
@@ -46,6 +50,52 @@ offset_bottom = 0.039993286
 grow_vertical = 2
 value = 50.0
 
+[node name="ShopPanel" type="Panel" parent="CanvasLayer"]
+process_mode = 3
+visible = false
+anchors_preset = -1
+anchor_top = 0.208
+anchor_right = 0.93700004
+anchor_bottom = 0.9250001
+offset_left = -3.0
+offset_top = 0.11999512
+offset_right = 0.3199463
+offset_bottom = -3.0517578e-05
+script = ExtResource("3_5nsto")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/ShopPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.99500006
+anchor_bottom = 1.0
+offset_right = 0.014953613
+offset_bottom = 3.0
+
+[node name="Label" type="Label" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+layout_mode = 2
+text = "--- NEGOZIO ---"
+horizontal_alignment = 1
+
+[node name="Btn_Damage" type="Button" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+layout_mode = 2
+text = "Potenzia Danno"
+alignment = 0
+
+[node name="Btn_Heal" type="Button" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+layout_mode = 2
+text = "Ripara Carovana"
+alignment = 0
+
+[node name="Btn_Speed" type="Button" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+layout_mode = 2
+text = "Velocità Attacco"
+alignment = 0
+
+[node name="Btn_Close" type="Button" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0, 0.02745098, 1)
+text = "CHIUDI NEGOZIO"
+
 [node name="Pavimento" type="StaticBody2D" parent="."]
 position = Vector2(0, 70)
 
@@ -53,4 +103,7 @@ position = Vector2(0, 70)
 position = Vector2(166, 21)
 shape = SubResource("RectangleShape2D_5nsto")
 
-[connection signal="pressed" from="CanvasLayer/UpgradeButton" to="Caravan" method="buy_upgrade"]
+[connection signal="pressed" from="CanvasLayer/ShopPanel/VBoxContainer/Btn_Damage" to="CanvasLayer/ShopPanel" method="_on_btn_damage_pressed"]
+[connection signal="pressed" from="CanvasLayer/ShopPanel/VBoxContainer/Btn_Heal" to="CanvasLayer/ShopPanel" method="_on_btn_heal_pressed"]
+[connection signal="pressed" from="CanvasLayer/ShopPanel/VBoxContainer/Btn_Speed" to="CanvasLayer/ShopPanel" method="_on_btn_speed_pressed"]
+[connection signal="pressed" from="CanvasLayer/ShopPanel/VBoxContainer/Btn_Close" to="CanvasLayer/ShopPanel" method="_on_btn_close_pressed"]

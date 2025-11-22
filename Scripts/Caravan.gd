@@ -3,6 +3,7 @@ extends CharacterBody2D
 # --- VARIABILI ---
 @export var speed = 50.0
 @export var damage = 10
+@export var is_in_mission = false # Nuovo: se true si muove, se false si ferma.
 var max_hp = 100
 var current_hp = 100
 
@@ -28,6 +29,8 @@ func _ready():
 		health_bar.value = current_hp
 
 func _physics_process(delta):
+	if not is_in_mission:
+		return
 	# 1. APPLICA GRAVITÀ (Il pezzo nuovo che hai aggiunto)
 	if not is_on_floor():
 		velocity.y += gravity * delta
