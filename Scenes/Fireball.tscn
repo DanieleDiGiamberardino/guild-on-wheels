@@ -11,12 +11,12 @@ script = ExtResource("1_dju2h")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 modulate = Color(1, 0.49019608, 0, 1)
-position = Vector2(130, 294)
+position = Vector2(-0.5, 0.75)
 scale = Vector2(0.2265625, 0.2148438)
 texture = ExtResource("1_o53bx")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(129, 296)
+position = Vector2(-0.5, 0.75)
 shape = SubResource("CircleShape2D_dju2h")
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

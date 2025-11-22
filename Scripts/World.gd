@@ -19,13 +19,19 @@ func spawn_enemy():
 	# 1. Creiamo una copia del Goblin
 	var new_goblin = goblin_scene.instantiate()
 	
-	# 2. Decidiamo dove metterlo: 
-	# Prendiamo la posizione della carovana e aggiungiamo 400 pixel a destra
-	# Più un po' di variazione casuale (tra 0 e 50 pixel extra)
+	# 2. Calcoliamo la X (avanti alla carovana)
 	var random_distance = randf_range(0, 50)
-	new_goblin.position = caravan.position + Vector2(400 + random_distance, 0)
+	var spawn_x = caravan.position.x + 400 + random_distance
 	
-	# 3. Aggiungiamo il goblin al mondo
+	# 3. Calcoliamo la Y (FISSA SUL PAVIMENTO)
+	# IMPORTANTE: Cambia '300.0' con l'altezza Y del tuo Pavimento!
+	# Guarda nell'Inspector del nodo 'Pavimento' o 'CollisionShape2D' qual è la Position Y.
+	var spawn_y = caravan.position.y 
+	
+	# 4. Assegniamo la posizione finale
+	new_goblin.position = Vector2(spawn_x, spawn_y)
+	
+	# 5. Aggiungiamo il goblin al mondo
 	add_child(new_goblin)
 	
-	print("Nuovo mostro generato!")
+	print("Nuovo mostro generato a terra!")
