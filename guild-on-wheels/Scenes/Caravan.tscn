@@ -10,6 +10,7 @@ size = Vector2(135.5, 133.5)
 size = Vector2(210.5, 24.375)
 
 [node name="Caravan" type="CharacterBody2D"]
+collision_mask = 4
 script = ExtResource("1_g7qt0")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
@@ -20,6 +21,8 @@ shape = SubResource("RectangleShape2D_g7qt0")
 
 [node name="EnemyDetector" type="Area2D" parent="."]
 position = Vector2(300, 0)
+collision_layer = 0
+collision_mask = 2
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyDetector"]
 position = Vector2(-84.25, 0)
@@ -29,5 +32,6 @@ shape = SubResource("RectangleShape2D_7f7nq")
 autostart = true
 
 [node name="Camera2D" type="Camera2D" parent="."]
+offset = Vector2(200, 0)
 
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

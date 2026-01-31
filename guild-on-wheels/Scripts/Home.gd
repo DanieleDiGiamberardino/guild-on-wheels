@@ -1,5 +1,12 @@
 extends Node2D
-
+func _ready():
+	# Stampa di debug per vedere se funziona
+	print("Benvenuto nella Gilda! Oro in Banca: ", GameData.permanent_gold)
+	
+	# SE HAI UNA LABEL NELLA SCENA HOME (es. BankLabel), SCOMMENTA QUESTO:
+	# var bank_label = get_node_or_null("CanvasLayer/BankLabel")
+	# if bank_label:
+	# 	bank_label.text = "Tesoro Gilda: " + str(GameData.permanent_gold)
 func _on_btn_start_mission_pressed():
 	# Carica la scena di livello (il tuo vecchio World.tscn)
 	get_tree().change_scene_to_file("res://Scenes/World.tscn")

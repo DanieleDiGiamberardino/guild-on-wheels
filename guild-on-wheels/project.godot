@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="GuildOnWheels"
+run/main_scene="uid://c2n0udap7rlb6"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -23,6 +24,12 @@ GameData="*res://Scripts/GameData.gd"
 window/size/viewport_width=640
 window/size/viewport_height=360
 window/stretch/mode="viewport"
+
+[layer_names]
+
+2d_physics/layer_1="Player"
+2d_physics/layer_2="Enemy"
+2d_physics/layer_3="World"
 
 [rendering]
 

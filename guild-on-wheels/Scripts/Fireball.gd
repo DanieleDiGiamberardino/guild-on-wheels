@@ -1,19 +1,37 @@
 extends Area2D
 
-var speed = 400 # Velocità del proiettile
-var damage = 0 # Questo valore glielo passerà la Carovana quando spara
+var speed = 600
+var direction = Vector2.RIGHT
+var damage = 10
+
+func _ready():
+	z_index = 100
+	
+	# --- DIAGNOSTICA INIZIALE ---
+	print("🔥 FIREBALL GENERATA!")
+	print("   > Posizione: ", global_position)
+	print("   > Collision Mask (Cosa guardo): ", collision_mask)
+	print("   > Monitoring attivo?: ", monitoring)
+	# ----------------------------
+
+	var timer = get_tree().create_timer(3.0)
+	timer.timeout.connect(queue_free)
 
 func _physics_process(delta):
-	# Vola verso destra all'infinito
-	position += Vector2.RIGHT * speed * delta
+	position += direction * speed * delta
 
-# Questa funzione scatta quando tocchiamo qualcosa
+# Questa funzione deve essere collegata dall'Editor (segnalino verde accanto)
 func _on_body_entered(body):
-	# Se abbiamo toccato un nemico
-	if body.is_in_group("Enemies"):
-		if body.has_method("take_damage"):
-			body.take_damage(damage)
-			print("Boom! Palla di fuoco a segno.")
-		
-		# Distruggiamo la palla di fuoco (altrimenti trapassa i nemici)
+	# --- DIAGNOSTICA IMPATTO ---
+	print("💥 LA PALLA HA TOCCATO QUALCOSA!")
+	print("   > Nome oggetto: ", body.name)
+	print("   > Collision Layer dell'oggetto: ", body.collision_layer)
+	# ---------------------------
+
+	if body.has_method("take_damage"):
+		print("   > C'è il metodo take_damage! Infliggo danni.")
+		body.take_damage(damage)
+		queue_free()
+	elif body.name != "Caravan":
+		print("   > Non è un nemico, ma mi distruggo lo stesso.")
 		queue_free()
