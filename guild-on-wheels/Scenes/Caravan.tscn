@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3 uid="uid://os2nv3m7rgj6"]
+
+[ext_resource type="Script" uid="uid://dq6ufum1bcuyr" path="res://Scripts/Caravan.gd" id="1_g7qt0"]
+[ext_resource type="Texture2D" uid="uid://drmmwdxcpusip" path="res://icon.svg" id="1_h6xt6"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_g7qt0"]
+size = Vector2(135.5, 133.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7f7nq"]
+size = Vector2(210.5, 24.375)
+
+[node name="Caravan" type="CharacterBody2D"]
+script = ExtResource("1_g7qt0")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_h6xt6")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_g7qt0")
+
+[node name="EnemyDetector" type="Area2D" parent="."]
+position = Vector2(300, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyDetector"]
+position = Vector2(-84.25, 0)
+shape = SubResource("RectangleShape2D_7f7nq")
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
