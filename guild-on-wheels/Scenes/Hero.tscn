@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://dhkdr6x258xlk"]
+
+[ext_resource type="Texture2D" uid="uid://drmmwdxcpusip" path="res://icon.svg" id="1_d235u"]
+[ext_resource type="Script" uid="uid://ctcsyabprqiad" path="res://Scripts/Hero.gd" id="1_nm5wh"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_nm5wh"]
+radius = 400.0
+
+[node name="Hero" type="Node2D"]
+script = ExtResource("1_nm5wh")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_d235u")
+offset = Vector2(0, -20)
+
+[node name="Range" type="Area2D" parent="."]
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Range"]
+shape = SubResource("CircleShape2D_nm5wh")
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true

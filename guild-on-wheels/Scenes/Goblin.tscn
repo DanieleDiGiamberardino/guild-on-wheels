@@ -6,9 +6,8 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_j0p05"]
 size = Vector2(134, 129)
 
-[sub_resource type="Animation" id="Animation_128dr"]
-resource_name = "run"
-loop_mode = 1
+[sub_resource type="Animation" id="Animation_gjpl2"]
+length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -22,8 +21,9 @@ tracks/0/keys = {
 "values": [Vector2(0, 0)]
 }
 
-[sub_resource type="Animation" id="Animation_gjpl2"]
-length = 0.001
+[sub_resource type="Animation" id="Animation_128dr"]
+resource_name = "run"
+loop_mode = 1
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true

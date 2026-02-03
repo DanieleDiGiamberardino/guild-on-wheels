@@ -1,77 +1,53 @@
 extends CharacterBody2D
 
-# --- VARIABILI ---
-@export var speed = 50.0
-@export var damage = 50
-@export var is_in_mission = false 
-
-var max_hp = 100
-var current_hp = 100
-
-# --- GESTIONE ORO ---
-var gold = 0
-var upgrade_cost = 50 
-
 # --- RIFERIMENTI ---
-var fireball_scene = preload("res://Scenes/Fireball.tscn")
 var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
-
-# Variabili UI (inizializzate a null per sicurezza)
-var health_bar = null
-var gold_label = null
 
 @onready var enemy_detector = $EnemyDetector
 
-# Bersaglio attuale
+# Bersaglio attuale (Ci serve solo per sapere se dobbiamo frenare)
 var current_target = null
 
+# (Opzionale) Teniamo il riferimento alla palla di fuoco se un giorno vorrai rimetterla
+var fireball_scene = preload("res://Scenes/Fireball.tscn")
+
 func _ready():
-	is_in_mission = true
-	# Cerca l'interfaccia in modo sicuro (evita crash se siamo nel Menu Home)
-	if get_parent().has_node("CanvasLayer/HealthBar"):
-		health_bar = get_parent().get_node("CanvasLayer/HealthBar")
-		health_bar.max_value = max_hp
-		health_bar.value = current_hp
-	
-	if get_parent().has_node("CanvasLayer/GoldLabel"):
-		gold_label = get_parent().get_node("CanvasLayer/GoldLabel")
-		gold_label.text = "Oro: " + str(gold)
+	print("Carovana pronta (Modalità: Payload). Vita: ", GameManager.cart_data.current_health)
 
 func _physics_process(delta):
-	# 1. GRAVITÀ (Deve funzionare SEMPRE, anche se la missione è ferma)
+	# 1. GRAVITÀ
 	if not is_on_floor():
 		velocity.y += gravity * delta
 
-	# Se non siamo in missione, applichiamo la gravità ma non ci muoviamo
-	if not is_in_mission:
+	# 2. CONTROLLO STATO
+	# Si muove solo in TRAVEL o COMBAT
+	if GameManager.current_state != GameManager.GameState.TRAVEL and GameManager.current_state != GameManager.GameState.COMBAT:
+		velocity.x = move_toward(velocity.x, 0, 10)
 		move_and_slide()
 		return
-	
-	# 2. LOGICA DI GIOCO (Solo se in missione)
+
+	# 3. LOGICA DI MOVIMENTO INTELLIGENTE
 	update_target()
 	
-	# Se abbiamo un bersaglio valido e vivo, freniamo per sparare
+	# Se abbiamo un nemico davanti...
 	if is_instance_valid(current_target):
-		velocity.x = move_toward(velocity.x, 0, speed * delta * 5)
+		# ...FRENIAMO! La carovana ha paura e aspetta che l'Eroe pulisca la strada.
+		velocity.x = move_toward(velocity.x, 0, 200 * delta)
 	else:
-		# Altrimenti avanziamo
-		current_target = null # Pulizia sicura
-		velocity.x = speed
+		# Altrimenti avanziamo alla velocità definita nei Dati
+		velocity.x = GameManager.cart_data.speed
 
 	move_and_slide()
 
-# --- LOGICA COMBATTIMENTO ---
+# --- RILEVAMENTO NEMICI (Solo per frenare) ---
 
 func update_target():
 	if not enemy_detector: return
 	
-	# Se abbiamo già un target, controlliamo se è ancora valido
 	if is_instance_valid(current_target):
-		# Se è ancora nel detector e non sta morendo, teniamocelo
 		if enemy_detector.overlaps_body(current_target) and not current_target.is_queued_for_deletion():
 			return 
 
-	# Se non abbiamo un target o quello vecchio è andato, cercane uno nuovo
 	current_target = null
 	var bodies = enemy_detector.get_overlapping_bodies()
 	
@@ -81,38 +57,33 @@ func update_target():
 				current_target = body
 				break
 
+# --- DISARMO TOTALE ---
+
 func _on_timer_timeout():
-	# Timer collegato al nodo Timer nella scena
-	if is_in_mission and is_instance_valid(current_target):
-		shoot_fireball()
+	# La Carovana ora è passiva. Non fa nulla quando scatta il timer.
+	pass
 
 func shoot_fireball():
-	if not fireball_scene: return
-
-	var ball = fireball_scene.instantiate()
-	# Spawn leggermente avanti e in alto per non colpire il pavimento
-	ball.global_position = global_position + Vector2(60, -10)
-	ball.damage = damage
+	# Funzione disattivata.
+	# Se vuoi riattivarla in futuro per un upgrade "Torretta", togli il 'return'
+	return 
 	
-	# Aggiungi al Mondo
-	get_parent().add_child(ball) 
+	# (Vecchio codice morto)
+	# if not fireball_scene: return
+	# var ball = fireball_scene.instantiate()
+	# ball.global_position = global_position + Vector2(60, -10)
+	# ball.damage = GameManager.cart_data.damage
+	# get_parent().add_child(ball) 
+
+# --- GESTIONE DANNI E ORO ---
 
 func take_damage(amount):
-	current_hp -= amount
-	if health_bar:
-		health_bar.value = current_hp
+	GameManager.damage_cart(amount)
 	
-	if current_hp <= 0:
-		game_over()
+	# Feedback visivo rosso
+	modulate = Color(1, 0, 0)
+	await get_tree().create_timer(0.1).timeout
+	modulate = Color(1, 1, 1)
 
-func game_over():
-	print("GAME OVER")
-	get_tree().reload_current_scene()
-
-# --- LOGICA UI ---
 func add_gold(amount):
-	gold += amount
-	if GameData:
-		GameData.add_savings(amount)
-	if gold_label:
-		gold_label.text = "Oro: " + str(gold)
+	GameManager.add_money(amount)

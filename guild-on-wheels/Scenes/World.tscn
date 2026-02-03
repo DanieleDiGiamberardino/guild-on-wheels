@@ -1,9 +1,12 @@
-[gd_scene load_steps=9 format=3 uid="uid://cvdmayb1i4wj0"]
+[gd_scene load_steps=12 format=3 uid="uid://cvdmayb1i4wj0"]
 
 [ext_resource type="PackedScene" uid="uid://os2nv3m7rgj6" path="res://Scenes/Caravan.tscn" id="1_5cjrv"]
 [ext_resource type="Script" uid="uid://wv7m0y56kfol" path="res://Scripts/World.gd" id="1_j0p05"]
+[ext_resource type="PackedScene" uid="uid://18mb5e2pg4n8" path="res://Scenes/Goblin.tscn" id="2_q2d71"]
 [ext_resource type="Script" uid="uid://cvt0i6b27ll73" path="res://Scripts/Shop.gd" id="3_5nsto"]
 [ext_resource type="Script" uid="uid://cwrum8gtm6tte" path="res://Scripts/Btn_OpenShop.gd" id="3_gjpho"]
+[ext_resource type="PackedScene" uid="uid://tsi3hgat0nrv" path="res://Scenes/Wolf.tscn" id="3_uo7di"]
+[ext_resource type="Script" uid="uid://d2y38mqcwfgb5" path="res://Scripts/UI/GameUI.gd" id="3_y7y61"]
 [ext_resource type="Texture2D" uid="uid://dat20xrpfuy7b" path="res://Backgrounds/Gemini_Generated_Image_vpke17vpke17vpke.png" id="5_p70al"]
 [ext_resource type="Texture2D" uid="uid://d3rj41u8yshp" path="res://Backgrounds/Gemini_Generated_Image_4zap304zap304zap-removebg-preview.png" id="6_45d1s"]
 
@@ -14,11 +17,15 @@ size = Vector2(50000, 44)
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_j0p05")
+enemy_scenes = Array[PackedScene]([ExtResource("2_q2d71"), ExtResource("3_uo7di")])
 
-[node name="Caravan" parent="." instance=ExtResource("1_5cjrv")]
+[node name="Caravan" parent="." groups=["Player"] instance=ExtResource("1_5cjrv")]
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." node_paths=PackedStringArray("health_bar", "gold_label")]
 layer = 100
+script = ExtResource("3_y7y61")
+health_bar = NodePath("HealthBar")
+gold_label = NodePath("GoldLabel")
 
 [node name="GoldLabel" type="Label" parent="CanvasLayer"]
 anchors_preset = -1
@@ -150,6 +157,7 @@ centered = false
 
 [node name="Background_Road" type="Parallax2D" parent="."]
 z_index = -10
+repeat_size = Vector2(1338, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="Background_Road"]
 position = Vector2(690.00006, 167)

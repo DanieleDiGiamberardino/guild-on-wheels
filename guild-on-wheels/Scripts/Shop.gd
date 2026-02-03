@@ -1,107 +1,79 @@
 extends Panel
 
-# Costi dei potenziamenti
+# Costi dei potenziamenti (puoi bilanciarli qui)
 var cost_damage = 50
 var cost_heal = 30
 var cost_speed = 100
 
-# Riferimenti
-@onready var caravan = null
-
-# Riferimenti ai bottoni nel VBoxContainer
+# Riferimenti ai bottoni (Assicurati che i nomi nel VBoxContainer siano giusti!)
 @onready var btn_damage = $VBoxContainer/Btn_Damage
 @onready var btn_heal = $VBoxContainer/Btn_Heal
 @onready var btn_speed = $VBoxContainer/Btn_Speed
-# (Opzionale) Se hai una label per l'oro nel negozio, aggiungila qui:
-# @onready var lbl_gold = $GoldLabel 
+@onready var lbl_gold = $VBoxContainer/GoldInfo # Se hai una label nel negozio, altrimenti rimuovi
 
 func _ready():
-	visible = false # Chiudi il negozio all'avvio
-	
-	# Cerchiamo la Carovana in modo sicuro
-	await get_tree().process_frame # Aspetta un attimo che tutto carichi
-	var players = get_tree().get_nodes_in_group("Player")
-	if players.size() > 0:
-		caravan = players[0]
-	else:
-		# Fallback se non è nel gruppo
-		if get_tree().root.has_node("World/Caravan"):
-			caravan = get_tree().root.get_node("World/Caravan")
+	visible = false # Nascondi all'avvio
 
 func open_shop():
-	print("HAI CLICCATO IL NEGOZIO!")
+	print("🏪 BENVENUTO NEL NEGOZIO!")
 	visible = true
-	get_tree().paused = true # PAUSA IL GIOCO
-	update_buttons_text()
+	get_tree().paused = true # Blocca il gioco
+	
+	# Aggiorna i testi con i prezzi attuali
+	update_ui()
+
+func close_shop():
+	visible = false
+	get_tree().paused = false # Riprendi il gioco
 
 func _on_btn_close_pressed():
-	visible = false
-	get_tree().paused = false # RIATTIVA IL GIOCO
+	close_shop()
 
-func update_buttons_text():
-	# Aggiorniamo i testi dei bottoni
-	btn_damage.text = "Spada (+5 Danno) - " + str(cost_damage) + " Oro"
-	btn_heal.text = "Ripara (+20 HP) - " + str(cost_heal) + " Oro"
-	btn_speed.text = "Fuoco Rapido - " + str(cost_speed) + " Oro"
+func update_ui():
+	# Leggiamo i dati dal Manager
+	var data = GameManager.cart_data
 	
-	# Se vuoi vedere l'oro aggiornato:
-	# if lbl_gold and caravan:
-	# 	lbl_gold.text = "Tuo Oro: " + str(caravan.gold)
+	btn_damage.text = "Spada (+10 Danno) - " + str(cost_damage) + " Oro"
+	btn_heal.text = "Ripara (+30 HP) - " + str(cost_heal) + " Oro"
+	btn_speed.text = "Fuoco Rapido (-0.1s) - " + str(cost_speed) + " Oro"
+	
+	if lbl_gold:
+		lbl_gold.text = "Tuo Oro: " + str(GameManager.session_gold)
 
-# --- FUNZIONI DI ACQUISTO ---
+# --- LOGICA ACQUISTI ---
 
 func _on_btn_damage_pressed():
-	if caravan and caravan.gold >= cost_damage:
-		# PAGAMENTO DIRETTO (Senza usare add_gold per non toccare la Banca)
-		caravan.gold -= cost_damage 
-		
-		# Effetto
-		caravan.damage += 5
-		print("Danno potenziato a: ", caravan.damage)
-		
-		# Aumenta prezzo e aggiorna UI
-		cost_damage += 25
-		
-		# Aggiorniamo anche la scritta dell'oro nella UI principale
-		if caravan.gold_label:
-			caravan.gold_label.text = "Oro: " + str(caravan.gold)
-			
-		update_buttons_text()
+	# Chiediamo al Manager: "Posso spendere questi soldi?"
+	if GameManager.spend_gold(cost_damage):
+		# Se sì, potenziamo i dati
+		GameManager.cart_data.damage += 10
+		cost_damage += 25 # Inflazione! Il prossimo costa di più
+		update_ui()
+		print("⚔️ Danno potenziato a: ", GameManager.cart_data.damage)
 	else:
-		print("Non hai abbastanza oro!")
+		print("❌ Non hai abbastanza oro!")
 
 func _on_btn_heal_pressed():
-	if caravan and caravan.gold >= cost_heal:
-		if caravan.current_hp < caravan.max_hp:
-			caravan.gold -= cost_heal
-			caravan.current_hp += 20
-			
-			if caravan.current_hp > caravan.max_hp:
-				caravan.current_hp = caravan.max_hp
-			
-			# Aggiorna barra vita
-			if caravan.health_bar:
-				caravan.health_bar.value = caravan.current_hp
-			
-			if caravan.gold_label:
-				caravan.gold_label.text = "Oro: " + str(caravan.gold)
-				
-			print("Carovana riparata!")
-			update_buttons_text()
+	# Controllo se serve curare
+	if GameManager.cart_data.current_health >= GameManager.cart_data.max_health:
+		print("La carovana è già nuova di zecca!")
+		return
+
+	if GameManager.spend_gold(cost_heal):
+		GameManager.heal_cart(30) # Cura 30 HP
+		update_ui()
+		print("💖 Carovana riparata!")
 
 func _on_btn_speed_pressed():
-	if caravan and caravan.gold >= cost_speed:
-		# Controllo Timer (Se esiste e non è troppo veloce)
-		if caravan.has_node("Timer"):
-			var timer = caravan.get_node("Timer")
-			if timer.wait_time > 0.1:
-				caravan.gold -= cost_speed
-				timer.wait_time -= 0.1
-				
-				cost_speed += 50
-				
-				if caravan.gold_label:
-					caravan.gold_label.text = "Oro: " + str(caravan.gold)
-					
-				update_buttons_text()
-				print("Velocità aumentata!")
+	var data = GameManager.cart_data
+	
+	# Limite massimo di velocità (per non rompere il gioco)
+	if data.fire_rate <= 0.2:
+		print("Sei già alla velocità massima!")
+		return
+
+	if GameManager.spend_gold(cost_speed):
+		data.fire_rate -= 0.1 # Spara più veloce
+		cost_speed += 50
+		update_ui()
+		print("⚡ Velocità di fuoco aumentata a: ", data.fire_rate)
