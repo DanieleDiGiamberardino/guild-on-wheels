@@ -10,7 +10,7 @@ var enemies_alive = 0
 @onready var spawn_timer = $SpawnTimer
 @onready var spawn_point = $SpawnPoint
 
-# Cerchiamo la carovana in modo dinamico (più sicuro)
+# Cerchiamo la carovana in modo dinamico
 var caravan = null
 
 # UI
@@ -18,7 +18,6 @@ var caravan = null
 @onready var btn_start_wave = $CanvasLayer/BtnStartWave
 
 func _ready():
-	# Troviamo la carovana nel gruppo Player
 	var players = get_tree().get_nodes_in_group("Player")
 	if players.size() > 0:
 		caravan = players[0]
@@ -27,30 +26,37 @@ func _ready():
 	btn_start_wave.visible = true
 	btn_start_wave.text = "INIZIA ONDATA 1"
 	
-	# Assicuriamoci che il gioco parta in stato di "Attesa"
 	GameManager.change_state(GameManager.GameState.EVENT)
 	update_ui()
 
-# --- GESTIONE ONDATA ---
+# --- GESTIONE ONDATA HARDCORE ---
 
 func start_next_wave():
-	# 1. NUOVO: Diciamo al Manager che inizia la guerra!
+	# 1. Stato COMBAT
 	GameManager.change_state(GameManager.GameState.COMBAT)
 	
 	btn_start_wave.visible = false
 	
-	# Calcola difficoltà
-	enemies_to_spawn = 3 + (current_wave * 2)
+	# --- MODIFICA DIFFICOLTÀ: IL MACELLO ---
+	# Prima: 3 + (Ondata * 2). Esempio Ondata 5 = 13 nemici
+	# ORA: 10 + (Ondata * 5). Esempio Ondata 5 = 35 nemici! 
+	enemies_to_spawn = 10 + (current_wave * 5)
 	enemies_alive = enemies_to_spawn
 	
-	# Velocizza lo spawn
-	var new_wait_time = 2.0 - (current_wave * 0.1)
-	if new_wait_time < 0.5: new_wait_time = 0.5
+	# --- MODIFICA VELOCITÀ: MITRAGLIATRICE ---
+	# Riduciamo il tempo drasticamente ogni ondata
+	# Ondata 1: 1.5s
+	# Ondata 5: 0.7s (Spawnano come pazzi)
+	var new_wait_time = 1.7 - (current_wave * 0.2)
+	
+	# Cap minimo molto basso (0.25s è velocissimo)
+	if new_wait_time < 0.25: new_wait_time = 0.25
+	
 	spawn_timer.wait_time = new_wait_time
 	spawn_timer.start()
 	
 	update_ui()
-	print("⚔️ ONDATA ", current_wave, " INIZIATA!")
+	print("⚔️ ONDATA ESTREMA ", current_wave, " INIZIATA! Nemici: ", enemies_to_spawn, " Rateo: ", new_wait_time)
 
 func _on_spawn_timer_timeout():
 	if enemies_to_spawn > 0:
@@ -61,28 +67,37 @@ func _on_spawn_timer_timeout():
 		spawn_timer.stop()
 
 func spawn_enemy():
-# CONTROLLO SICUREZZA
-	if enemy_scenes.size() == 0:
-		print("❌ ERRORE: Nessun nemico nell'array 'enemy_scenes'!")
-		return
+	if enemy_scenes.size() == 0: return
 
-	# 1. PESCA UN NEMICO A CASO
+	# 1. Crea il nemico base
 	var random_scene = enemy_scenes.pick_random()
 	var enemy = random_scene.instantiate()
 	
-	# 2. POSIZIONAMENTO (Uguale a prima)
+	# --- NUOVO: POTENZIAMENTO DINAMICO ---
+	# Calcoliamo un moltiplicatore: 
+	# Ondata 1 = 1.0 (Normale)
+	# Ondata 5 = 2.0 (Doppia Vita)
+	# Ondata 10 = 3.25 (Tripla Vita!)
+	var multiplier = 1.0 + (current_wave * 0.25)
+	
+	# Controlliamo se il nemico ha la variabile "hp" per evitare errori
+	if "hp" in enemy:
+		enemy.hp = int(enemy.hp * multiplier)
+		# (Opzionale) Possiamo ingrandirli leggermente per far vedere che sono grossi
+		enemy.scale = Vector2(1, 1) * (1.0 + (current_wave * 0.05))
+		
+	# -------------------------------------
+	
+	# 2. Posizionamento (uguale a prima)
 	var spawn_x = caravan.global_position.x + 1000
 	var spawn_y = spawn_point.global_position.y
 	
 	enemy.global_position = Vector2(spawn_x, spawn_y)
-	
-	# Importante: collegare la morte per contare l'ondata
 	enemy.tree_exited.connect(_on_enemy_died)
 	
 	add_child(enemy)
 
 func _on_enemy_died():
-	# Importante: controlliamo se il gioco è ancora attivo
 	if enemies_alive > 0:
 		enemies_alive -= 1
 		update_ui()
@@ -91,15 +106,16 @@ func _on_enemy_died():
 			wave_completed()
 
 func wave_completed():
-	print("✅ ONDATA ", current_wave, " COMPLETATA!")
+	print("✅ ONDATA ", current_wave, " SOPRAVVISSUTA!")
 	
-	# 2. NUOVO: Bonus Oro direttamente nella Banca
-	GameManager.add_money(50 + (current_wave * 10))
-	print("💰 Bonus Ondata incassato!")
+	# Aumentiamo anche la ricompensa, altrimenti è impossibile potenziarsi abbastanza!
+	# Prima: 50 + (wave * 10)
+	# Ora: 100 + (wave * 25) -> Più soldi per comprare danni nel negozio
+	var reward = 100 + (current_wave * 25)
+	GameManager.add_money(reward)
+	print("💰 Ricompensa massiccia incassata: ", reward)
 	
-	# 3. NUOVO: L'ondata è finita, apriamo il Negozio o torniamo a viaggiare?
-	# Per ora torniamo in stato EVENT (fermi) aspettando il click
-	GameManager.change_state(GameManager.GameState.EVENT) # O TRAVEL se vuoi che riparta
+	GameManager.change_state(GameManager.GameState.EVENT) 
 	
 	current_wave += 1
 	btn_start_wave.text = "INIZIA ONDATA " + str(current_wave)

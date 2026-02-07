@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://c2n0udap7rlb6"]
+[gd_scene load_steps=4 format=3 uid="uid://c2n0udap7rlb6"]
 
 [ext_resource type="PackedScene" uid="uid://os2nv3m7rgj6" path="res://Scenes/Caravan.tscn" id="1_3wroe"]
 [ext_resource type="Script" uid="uid://d06n63pjf52du" path="res://Scripts/Home.gd" id="1_oauki"]
+[ext_resource type="Script" uid="uid://cf8nvlv3k6k40" path="res://Scripts/MetaShop.gd" id="3_biidh"]
 
 [node name="Home" type="Node2D"]
 script = ExtResource("1_oauki")
@@ -32,6 +33,41 @@ text = "GESTIONE CAROVANA"
 layout_mode = 2
 text = "ESCI"
 
+[node name="ShopPanel" type="Panel" parent="CanvasLayer"]
+visible = false
+offset_right = 571.0
+offset_bottom = 274.0
+script = ExtResource("3_biidh")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/ShopPanel"]
+layout_mode = 0
+offset_right = 570.0
+offset_bottom = 273.0
+
+[node name="Label" type="Label" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+layout_mode = 2
+text = "Negozio Gilda"
+
+[node name="Btn_Damage" type="Button" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+layout_mode = 2
+text = "Potenzia Danno"
+
+[node name="Btn_Heal" type="Button" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+layout_mode = 2
+text = "Rinforza Carro - Max HP"
+
+[node name="Btn_Speed" type="Button" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+layout_mode = 2
+text = "Velocità Attacco"
+
+[node name="Btn_Close" type="Button" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+layout_mode = 2
+text = "CHIUDI"
+
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/Btn_StartMission" to="." method="_on_btn_start_mission_pressed"]
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/Btn_ManageShop" to="." method="_on_btn_manage_shop_pressed"]
 [connection signal="pressed" from="CanvasLayer/VBoxContainer/Btn_Exit" to="." method="_on_btn_exit_pressed"]
+[connection signal="pressed" from="CanvasLayer/ShopPanel/VBoxContainer/Btn_Damage" to="CanvasLayer/ShopPanel" method="_on_btn_damage_pressed"]
+[connection signal="pressed" from="CanvasLayer/ShopPanel/VBoxContainer/Btn_Heal" to="CanvasLayer/ShopPanel" method="_on_btn_heal_pressed"]
+[connection signal="pressed" from="CanvasLayer/ShopPanel/VBoxContainer/Btn_Speed" to="CanvasLayer/ShopPanel" method="_on_btn_speed_pressed"]
+[connection signal="pressed" from="CanvasLayer/ShopPanel/VBoxContainer/Btn_Close" to="CanvasLayer/ShopPanel" method="_on_btn_close_pressed"]

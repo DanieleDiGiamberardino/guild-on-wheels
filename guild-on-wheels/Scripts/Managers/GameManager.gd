@@ -1,102 +1,115 @@
 extends Node
 
-# --- STATI DEL GIOCO ---
+# --- STATI E SEGNALI ---
 enum GameState { TRAVEL, COMBAT, CAMP, EVENT, GAME_OVER }
 
-# --- SEGNALI (Notifiche per la UI) ---
 signal game_over_triggered
 signal state_changed(new_state)
 signal cart_updated(current_health, max_health)
-signal gold_updated(current_gold) # Nuovo segnale per aggiornare le etichette dell'oro
+signal gold_updated(current_gold)
 
 # --- VARIABILI GLOBALI ---
 var current_state: GameState = GameState.TRAVEL
 var cart_data: CartData
 
-# --- LA TUA BANCA (Integrata qui) ---
-# permanent_gold: I soldi al sicuro in banca (per gli upgrade permanenti)
+# --- DATI DA SALVARE (Banca e Livelli Gilda) ---
 var permanent_gold: int = 0
-# session_gold: I soldi raccolti DURANTE la missione attuale (che perdi se muori)
+var guild_level_damage: int = 0
+var guild_level_health: int = 0
+var guild_level_speed: int = 0
+
+# --- DATI SESSIONE (Temporanei) ---
 var session_gold: int = 0
 
 func _ready():
 	_setup_test_data()
+	# 1. APPENA IL GIOCO PARTE, CARICHIAMO I DATI!
+	load_game()
 	print("✅ GameManager Attivo. Banca caricata: ", permanent_gold)
 
-# --- FUNZIONI DI GESTIONE STATI ---
-func change_state(new_state: GameState):
-	if current_state == new_state: return
+# --- SISTEMA DI SALVATAGGIO (FILE SYSTEM) ---
+
+func save_game():
+	var save_data = {
+		"gold": permanent_gold,
+		"lvl_dmg": guild_level_damage,
+		"lvl_hp": guild_level_health,
+		"lvl_spd": guild_level_speed
+	}
+	var file = FileAccess.open("user://savegame.save", FileAccess.WRITE)
+	file.store_var(save_data)
+	print("💾 Partita salvata correttamente!")
+
+func load_game():
+	if not FileAccess.file_exists("user://savegame.save"):
+		return # Nessun salvataggio esistente
+	
+	var file = FileAccess.open("user://savegame.save", FileAccess.READ)
+	var data = file.get_var()
+	
+	# Ripristiniamo i valori salvati
+	permanent_gold = data.get("gold", 0)
+	guild_level_damage = data.get("lvl_dmg", 0)
+	guild_level_health = data.get("lvl_hp", 0)
+	guild_level_speed = data.get("lvl_spd", 0)
+	print("📂 Dati caricati: ", data)
+
+# --- GESTIONE PARTITA E BILANCIAMENTO ---
+
+func start_new_run():
+	session_gold = 0
+	current_state = GameState.EVENT
+	
+	if cart_data:
+		cart_data.initialize() # Reset base
+		
+		# --- BILANCIAMENTO POWER-UP (Qui applichiamo i livelli salvati!) ---
+		
+		# Danno: +12 per livello (Molto forte per compensare i nemici)
+		cart_data.damage += (guild_level_damage * 12)
+		
+		# Vita: +30 per livello
+		cart_data.max_health += (guild_level_health * 30)
+		cart_data.current_health = cart_data.max_health
+		
+		# Velocità: Spara più veloce ogni livello
+		var speed_bonus = (guild_level_speed * 0.1)
+		cart_data.fire_rate = max(0.15, cart_data.fire_rate - speed_bonus)
+		
+	print("💪 Nuova run avviata con potenziamenti Gilda!")
+
+func game_over():
+	if current_state == GameState.GAME_OVER: return
+	print("💀 GAME OVER")
+	current_state = GameState.GAME_OVER
+	session_gold = 0 # Perdi l'oro della sessione
+	# Non salviamo qui perché non è cambiato nulla nella banca
+	await get_tree().create_timer(2.0).timeout
+	get_tree().change_scene_to_file("res://Scenes/Home.tscn")
+
+func secure_gold():
+	# Chiama questa funzione quando finisci un livello VIVO
+	permanent_gold += session_gold
+	session_gold = 0
+	save_game() # SALVIAMO I SOLDI GUADAGNATI!
+	print("🏦 Oro al sicuro.")
+
+# --- UTILITY ---
+func _setup_test_data():
+	cart_data = CartData.new()
+	cart_data.initialize()
+
+func change_state(new_state):
 	current_state = new_state
 	emit_signal("state_changed", new_state)
 
-func damage_cart(amount: int):
+func damage_cart(amount):
 	if cart_data:
 		cart_data.current_health -= amount
 		emit_signal("cart_updated", cart_data.current_health, cart_data.max_health)
 		if cart_data.current_health <= 0:
 			game_over()
 
-# --- LE TUE FUNZIONI PER L'ORO (Migliorate) ---
-func add_money(amount: int):
-	# Aggiungiamo ai soldi della sessione corrente
+func add_money(amount):
 	session_gold += amount
-	print("💰 Raccolto oro! Totale sessione: ", session_gold)
 	emit_signal("gold_updated", session_gold)
-
-func secure_gold():
-	# Chiama questa funzione quando finisci una missione vivo
-	permanent_gold += session_gold
-	session_gold = 0
-	print("🏦 Oro messo in banca! Totale salvato: ", permanent_gold)
-	# Qui in futuro chiameremo save_game()
-
-func game_over():
-	if current_state == GameState.GAME_OVER: return
-	
-	print("💀 CAROVANA DISTRUTTA! La missione è fallita.")
-	current_state = GameState.GAME_OVER
-	
-	# (Opzionale) Qui potresti decidere se l'oro raccolto viene perso o salvato.
-	# Per ora lo perdiamo (roguelike cattivo):
-	session_gold = 0
-	
-	# Creiamo un piccolo ritardo di 2 secondi così il giocatore vede che è morto
-	# IMPORTANTE: Usiamo create_timer invece di mettere in pausa il gioco
-	await get_tree().create_timer(2.0).timeout
-	
-	# Ora torniamo alla base (Home)
-	print("🏠 Ritorno alla Gilda...")
-	get_tree().change_scene_to_file("res://Scenes/Home.tscn")
-
-# --- SETUP DI PROVA ---
-func _setup_test_data():
-	cart_data = CartData.new()
-	cart_data.initialize()
-# --- FUNZIONI PER IL NEGOZIO ---
-
-# Restituisce true se l'acquisto va a buon fine, false se non hai soldi
-func spend_gold(amount: int) -> bool:
-	if session_gold >= amount:
-		session_gold -= amount
-		emit_signal("gold_updated", session_gold)
-		return true
-	return false
-
-func heal_cart(amount: int):
-	if cart_data:
-		cart_data.current_health += amount
-		# Non superiamo mai la vita massima
-		if cart_data.current_health > cart_data.max_health:
-			cart_data.current_health = cart_data.max_health
-		
-		# Avvisiamo la UI che la vita è cambiata
-		emit_signal("cart_updated", cart_data.current_health, cart_data.max_health)
-# Incolla questo in fondo a GameManager.gd se non c'è già
-func start_new_run():
-	session_gold = 0
-	current_state = GameState.EVENT # Parte ferma in attesa dell'ondata
-	
-	if cart_data:
-		cart_data.initialize() # HP al massimo
-	
-	print("🔄 Nuova run inizializzata!")

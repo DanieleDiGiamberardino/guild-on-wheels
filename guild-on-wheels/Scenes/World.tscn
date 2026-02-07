@@ -24,20 +24,8 @@ enemy_scenes = Array[PackedScene]([ExtResource("2_q2d71"), ExtResource("3_uo7di"
 [node name="CanvasLayer" type="CanvasLayer" parent="." node_paths=PackedStringArray("health_bar", "gold_label")]
 layer = 100
 script = ExtResource("3_y7y61")
-health_bar = NodePath("HealthBar")
-gold_label = NodePath("GoldLabel")
-
-[node name="GoldLabel" type="Label" parent="CanvasLayer"]
-anchors_preset = -1
-anchor_left = 0.116000004
-anchor_right = 0.19800001
-anchor_bottom = 0.064
-offset_left = -0.2400055
-offset_right = 0.27999115
-offset_bottom = -0.040000916
-grow_horizontal = 2
-text = "Oro : 0"
-label_settings = SubResource("LabelSettings_j0p05")
+health_bar = NodePath("HUD/HealthBar")
+gold_label = NodePath("HUD/GoldLabel")
 
 [node name="Btn_OpenShop" type="Button" parent="CanvasLayer"]
 anchors_preset = 1
@@ -49,16 +37,6 @@ grow_horizontal = 0
 text = "Negozio
 "
 script = ExtResource("3_gjpho")
-
-[node name="HealthBar" type="ProgressBar" parent="CanvasLayer"]
-anchors_preset = -1
-anchor_left = 0.003
-anchor_right = 0.053000003
-anchor_bottom = 0.075
-offset_left = 0.07999992
-offset_right = 6.079998
-size_flags_horizontal = 0
-value = 100.0
 
 [node name="WaveLabel" type="Label" parent="CanvasLayer"]
 anchors_preset = 5
@@ -129,6 +107,37 @@ offset_bottom = 15.5
 grow_horizontal = 2
 grow_vertical = 2
 text = "Start Wave"
+
+[node name="HUD" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="HealthBar" type="ProgressBar" parent="CanvasLayer/HUD"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.003
+anchor_right = 0.053000003
+anchor_bottom = 0.075
+offset_left = 1.88
+offset_right = 27.88
+offset_bottom = 25.0
+size_flags_horizontal = 0
+value = 100.0
+
+[node name="GoldLabel" type="Label" parent="CanvasLayer/HUD"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.116000004
+anchor_right = 0.19800001
+anchor_bottom = 0.064
+offset_left = 69.36
+offset_right = 118.08
+offset_bottom = 20.44
+grow_horizontal = 2
+text = "Oro : 0"
+label_settings = SubResource("LabelSettings_j0p05")
 
 [node name="Pavimento" type="StaticBody2D" parent="."]
 position = Vector2(0, 70)
