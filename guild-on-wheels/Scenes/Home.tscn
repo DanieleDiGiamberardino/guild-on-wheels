@@ -4,8 +4,12 @@
 [ext_resource type="Script" uid="uid://d06n63pjf52du" path="res://Scripts/Home.gd" id="1_oauki"]
 [ext_resource type="Script" uid="uid://cf8nvlv3k6k40" path="res://Scripts/MetaShop.gd" id="3_biidh"]
 
-[node name="Home" type="Node2D"]
+[node name="Home" type="Node2D" node_paths=PackedStringArray("btn_start", "btn_shop", "btn_exit", "shop_panel")]
 script = ExtResource("1_oauki")
+btn_start = NodePath("CanvasLayer/VBoxContainer/Btn_StartMission")
+btn_shop = NodePath("CanvasLayer/VBoxContainer/Btn_ManageShop")
+btn_exit = NodePath("CanvasLayer/VBoxContainer/Btn_Exit")
+shop_panel = NodePath("CanvasLayer/ShopPanel")
 
 [node name="Caravan" parent="." instance=ExtResource("1_3wroe")]
 
@@ -44,7 +48,7 @@ layout_mode = 0
 offset_right = 570.0
 offset_bottom = 273.0
 
-[node name="Label" type="Label" parent="CanvasLayer/ShopPanel/VBoxContainer"]
+[node name="GoldInfo" type="Label" parent="CanvasLayer/ShopPanel/VBoxContainer"]
 layout_mode = 2
 text = "Negozio Gilda"
 

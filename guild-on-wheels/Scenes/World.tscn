@@ -1,7 +1,8 @@
-[gd_scene load_steps=12 format=3 uid="uid://cvdmayb1i4wj0"]
+[gd_scene load_steps=14 format=3 uid="uid://cvdmayb1i4wj0"]
 
 [ext_resource type="PackedScene" uid="uid://os2nv3m7rgj6" path="res://Scenes/Caravan.tscn" id="1_5cjrv"]
 [ext_resource type="Script" uid="uid://wv7m0y56kfol" path="res://Scripts/World.gd" id="1_j0p05"]
+[ext_resource type="Resource" uid="uid://bpo8obnlfcon" path="res://Scripts/NormalDifficulty.tres" id="2_kn06e"]
 [ext_resource type="PackedScene" uid="uid://18mb5e2pg4n8" path="res://Scenes/Goblin.tscn" id="2_q2d71"]
 [ext_resource type="Script" uid="uid://cvt0i6b27ll73" path="res://Scripts/Shop.gd" id="3_5nsto"]
 [ext_resource type="Script" uid="uid://cwrum8gtm6tte" path="res://Scripts/Btn_OpenShop.gd" id="3_gjpho"]
@@ -9,6 +10,7 @@
 [ext_resource type="Script" uid="uid://d2y38mqcwfgb5" path="res://Scripts/UI/GameUI.gd" id="3_y7y61"]
 [ext_resource type="Texture2D" uid="uid://dat20xrpfuy7b" path="res://Backgrounds/Gemini_Generated_Image_vpke17vpke17vpke.png" id="5_p70al"]
 [ext_resource type="Texture2D" uid="uid://d3rj41u8yshp" path="res://Backgrounds/Gemini_Generated_Image_4zap304zap304zap-removebg-preview.png" id="6_45d1s"]
+[ext_resource type="PackedScene" uid="uid://b2bfhetwfhm18" path="res://Scenes/PauseMenu.tscn" id="11_7yo87"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_j0p05"]
 
@@ -17,6 +19,7 @@ size = Vector2(50000, 44)
 
 [node name="World" type="Node2D"]
 script = ExtResource("1_j0p05")
+wave_config = ExtResource("2_kn06e")
 enemy_scenes = Array[PackedScene]([ExtResource("2_q2d71"), ExtResource("3_uo7di")])
 
 [node name="Caravan" parent="." groups=["Player"] instance=ExtResource("1_5cjrv")]
@@ -172,6 +175,8 @@ repeat_size = Vector2(1338, 0)
 position = Vector2(690.00006, 167)
 scale = Vector2(2.4633784, 0.99731904)
 texture = ExtResource("6_45d1s")
+
+[node name="PauseMenu" parent="." instance=ExtResource("11_7yo87")]
 
 [connection signal="pressed" from="CanvasLayer/ShopPanel/VBoxContainer/Btn_Damage" to="CanvasLayer/ShopPanel" method="_on_btn_damage_pressed"]
 [connection signal="pressed" from="CanvasLayer/ShopPanel/VBoxContainer/Btn_Heal" to="CanvasLayer/ShopPanel" method="_on_btn_heal_pressed"]

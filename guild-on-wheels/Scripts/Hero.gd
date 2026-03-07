@@ -16,7 +16,7 @@ func _ready():
 	if not projectile_scene:
 		projectile_scene = load("res://Scenes/Fireball.tscn")
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	if not can_shoot: return
 	
 	update_target()

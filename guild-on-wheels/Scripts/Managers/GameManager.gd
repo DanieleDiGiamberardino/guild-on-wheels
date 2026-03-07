@@ -6,7 +6,9 @@ enum GameState { TRAVEL, COMBAT, CAMP, EVENT, GAME_OVER }
 signal game_over_triggered
 signal state_changed(new_state)
 signal cart_updated(current_health, max_health)
-signal gold_updated(current_gold)
+
+# --- UNICO SEGNALE PER L'ORO ---
+signal gold_updated(current_gold) 
 
 # --- VARIABILI GLOBALI ---
 var current_state: GameState = GameState.TRAVEL
@@ -65,7 +67,7 @@ func start_new_run():
 		
 		# --- BILANCIAMENTO POWER-UP (Qui applichiamo i livelli salvati!) ---
 		
-		# Danno: +12 per livello (Molto forte per compensare i nemici)
+		# Danno: +12 per livello
 		cart_data.damage += (guild_level_damage * 12)
 		
 		# Vita: +30 per livello
@@ -81,9 +83,9 @@ func start_new_run():
 func game_over():
 	if current_state == GameState.GAME_OVER: return
 	print("💀 GAME OVER")
+	game_over_triggered.emit()
 	current_state = GameState.GAME_OVER
-	session_gold = 0 # Perdi l'oro della sessione
-	# Non salviamo qui perché non è cambiato nulla nella banca
+	session_gold = 0 
 	await get_tree().create_timer(2.0).timeout
 	get_tree().change_scene_to_file("res://Scenes/Home.tscn")
 
@@ -91,10 +93,11 @@ func secure_gold():
 	# Chiama questa funzione quando finisci un livello VIVO
 	permanent_gold += session_gold
 	session_gold = 0
-	save_game() # SALVIAMO I SOLDI GUADAGNATI!
+	save_game() 
 	print("🏦 Oro al sicuro.")
 
-# --- UTILITY ---
+# --- UTILITY E SALUTE CAROVANA ---
+
 func _setup_test_data():
 	cart_data = CartData.new()
 	cart_data.initialize()
@@ -110,6 +113,30 @@ func damage_cart(amount):
 		if cart_data.current_health <= 0:
 			game_over()
 
+# --- ➕ NUOVA FUNZIONE PER LO SHOP ➕ ---
+func heal_cart(amount):
+	if cart_data:
+		cart_data.current_health += amount
+		# NON SUPERARE MAI LA VITA MASSIMA!
+		if cart_data.current_health > cart_data.max_health:
+			cart_data.current_health = cart_data.max_health
+			
+		emit_signal("cart_updated", cart_data.current_health, cart_data.max_health)
+		print("💖 Carovana curata. HP: ", cart_data.current_health)
+
+# --- GESTIONE ECONOMIA UNIFICATA ---
+
 func add_money(amount):
 	session_gold += amount
-	emit_signal("gold_updated", session_gold)
+	gold_updated.emit(session_gold) 
+	print("💰 GUADAGNO: +", amount, " | Totale: ", session_gold)
+
+func spend_gold(amount: int) -> bool:
+	if session_gold >= amount:
+		session_gold -= amount
+		print("💰 SPESA EFFETTUATA: ", amount, " | Rimasti: ", session_gold)
+		gold_updated.emit(session_gold) 
+		return true
+	else:
+		print("❌ FONDI INSUFFICIENTI! Hai: ", session_gold, " Serve: ", amount)
+		return false

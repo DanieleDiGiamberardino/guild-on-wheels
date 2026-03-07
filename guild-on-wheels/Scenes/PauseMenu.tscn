@@ -1,0 +1,38 @@
+[gd_scene load_steps=2 format=3 uid="uid://b2bfhetwfhm18"]
+
+[ext_resource type="Script" uid="uid://3gyiw35xw7ue" path="res://Scripts/Pause_Menu.gd" id="1_lj4oq"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+process_mode = 3
+script = ExtResource("1_lj4oq")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_right = 639.0
+offset_bottom = 358.0
+color = Color(0.21568628, 0.21568628, 0.21568628, 0.5882353)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+offset_top = 38.0
+offset_right = 639.0
+offset_bottom = 315.0
+
+[node name="BtnResume" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Riprendi"
+
+[node name="BtnOptions" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Opzioni"
+
+[node name="BtnMainMenu" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Menu Principale"
+
+[node name="BtnQuit" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Esci"
+
+[connection signal="pressed" from="VBoxContainer/BtnResume" to="." method="_on_btn_resume_pressed"]
+[connection signal="pressed" from="VBoxContainer/BtnOptions" to="." method="_on_btn_options_pressed"]
+[connection signal="pressed" from="VBoxContainer/BtnMainMenu" to="." method="_on_btn_main_menu_pressed"]
+[connection signal="pressed" from="VBoxContainer/BtnQuit" to="." method="_on_btn_quit_pressed"]

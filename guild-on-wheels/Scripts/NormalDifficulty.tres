@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="WaveConfig" load_steps=5 format=3 uid="uid://bpo8obnlfcon"]
+
+[ext_resource type="Script" uid="uid://b085yopwyctcr" path="res://Scripts/Resources/WaveConfig.gd" id="1_quyov"]
+
+[sub_resource type="Curve" id="Curve_quyov"]
+_data = [Vector2(0, 0.1), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_vdoif"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 5), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Curve" id="Curve_maccc"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[resource]
+script = ExtResource("1_quyov")
+enemy_count_curve = SubResource("Curve_quyov")
+spawn_rate_curve = SubResource("Curve_maccc")
+health_multiplier_curve = SubResource("Curve_vdoif")
+metadata/_custom_type_script = "uid://b085yopwyctcr"
